@@ -1,4 +1,4 @@
-Denial of service in elliptic curve parsing
+Denial of Service in Elliptic Curve Parsing
 ===========================================
 
 Overview
@@ -10,25 +10,34 @@ any system which parses public keys, certificate requests or
 certificates.  This includes TLS clients and TLS servers with
 client authentication enabled.
 
+Details
+-------
+
+Workarounds
+-----------
+Compile openssl with `--no-ec2m`.  This disables all support
+for elliptic curves over binary polynomial fields.  You really
+were not using them.
+
 PoC
 ---
 
-- original-cert.der: a basic X509 certificate with a public
-  key on the ANSI X9.62 c2pnb208w1 curve.  The choice of curve
+- `original-cert.der`: a basic X509 certificate with a public
+  key on the ANSI X9.62 `c2pnb208w1` curve.  The choice of curve
   is not important, except it must be a binary curve, and must
   be explicitly specified.
-- broken-cert.der: the same file, with edits to trigger the bug.
+- `broken-cert.der`: the same file, with edits to trigger the bug.
   This is not a unique set of edits; a fuzzer will find others.
-- dumb-server.py: this is a trivial TLS server.  Its sole purpose
-  is to accept a ClientHello, and reply with a ServerHello and
-  Certificate containing the malformed certificate.
+- `dumb-server.py`: this is a trivial TLS server.  Its sole purpose
+  is to accept a `ClientHello`, and reply with a `ServerHello` and
+  `Certificate` containing the malformed certificate.
 
 First, start the server:
 
     $ python3 dumb-server.py broken-cert.der
     listening on localhost 9999
 
-Reproduce with openssl s_client:
+Reproduce with `openssl s_client`:
 
     $ gdb -ex run --args openssl s_client -connect localhost:9999
     <snip>
@@ -65,7 +74,7 @@ Reproduce with openssl s_client:
             fini=<optimised out>, rtld_fini=<optimised out>, stack_end=0x7fffffffe0f8) at libc-start.c:287
     #20 0x000000000041885b in ?? ()
 
-Reproduce with curl:
+Reproduce with `curl`:
 
     $ gdb -ex run --args curl https://localhost:9999
     <snip>
@@ -128,8 +137,7 @@ Fork status
 -----------
 
 - BoringSSL has deleted this code.
-- LibreSSL continues to have this code and is expected to be
-  vulnerable.
+- LibreSSL has the affected code and is thought to be vulnerable (untested).
 
 Author
 ------
