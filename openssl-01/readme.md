@@ -25,42 +25,42 @@ PoC
 
 Session:
 
-$ python3 dumb-server.py broken-cert.der &
-listening on localhost 9999
-$ gdb -ex run --args openssl s_client -connect localhost:9999
-<snip>
-Starting program: /usr/bin/openssl s_client -connect localhost:9999
-CONNECTED(00000003)
-depth=0 C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
-verify error:num=18:self signed certificate
-verify return:1
-<hang>
-^C
-Program received signal SIGINT, Interrupt.
-0x00007ffff7849198 in BN_GF2m_mod_inv () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-(gdb) bt
-#0  0x00007ffff7849198 in BN_GF2m_mod_inv () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#1  0x00007ffff78494f6 in BN_GF2m_mod_div () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#2  0x00007ffff7868488 in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#3  0x00007ffff785253c in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#4  0x00007ffff785371e in d2i_ECPKParameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#5  0x00007ffff7853eaa in d2i_ECParameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#6  0x00007ffff7857338 in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#7  0x00007ffff785767c in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#8  0x00007ffff78a2ac8 in X509_PUBKEY_get () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#9  0x00007ffff78bea02 in X509_get_pubkey_parameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-#10 0x00007ffff78bf292 in X509_verify_cert () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-##11 0x00007ffff7bb69c8 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
-#12 0x00007ffff7b94d8b in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
-#13 0x00007ffff7b99002 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
-#14 0x00007ffff7ba1ae9 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
-#15 0x00007ffff7ba2232 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
-#16 0x000000000043c977 in ?? ()
-#17 0x0000000000418a88 in ?? ()
-#18 0x00000000004187d6 in ?? ()
-#19 0x00007ffff73fdec5 in __libc_start_main (main=0x4182e0, argc=4, argv=0x7fffffffe108, init=<optimised out>, 
-    fini=<optimised out>, rtld_fini=<optimised out>, stack_end=0x7fffffffe0f8) at libc-start.c:287
-#20 0x000000000041885b in ?? ()
+    $ python3 dumb-server.py broken-cert.der &
+    listening on localhost 9999
+    $ gdb -ex run --args openssl s_client -connect localhost:9999
+    <snip>
+    Starting program: /usr/bin/openssl s_client -connect localhost:9999
+    CONNECTED(00000003)
+    depth=0 C = AU, ST = Some-State, O = Internet Widgits Pty Ltd
+    verify error:num=18:self signed certificate
+    verify return:1
+    <hang>
+    ^C
+    Program received signal SIGINT, Interrupt.
+    0x00007ffff7849198 in BN_GF2m_mod_inv () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    (gdb) bt
+    #0  0x00007ffff7849198 in BN_GF2m_mod_inv () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #1  0x00007ffff78494f6 in BN_GF2m_mod_div () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #2  0x00007ffff7868488 in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #3  0x00007ffff785253c in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #4  0x00007ffff785371e in d2i_ECPKParameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #5  0x00007ffff7853eaa in d2i_ECParameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #6  0x00007ffff7857338 in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #7  0x00007ffff785767c in ?? () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #8  0x00007ffff78a2ac8 in X509_PUBKEY_get () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #9  0x00007ffff78bea02 in X509_get_pubkey_parameters () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #10 0x00007ffff78bf292 in X509_verify_cert () from /lib/x86_64-linux-gnu/libcrypto.so.1.0.0
+    #11 0x00007ffff7bb69c8 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
+    #12 0x00007ffff7b94d8b in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
+    #13 0x00007ffff7b99002 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
+    #14 0x00007ffff7ba1ae9 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
+    #15 0x00007ffff7ba2232 in ?? () from /lib/x86_64-linux-gnu/libssl.so.1.0.0
+    #16 0x000000000043c977 in ?? ()
+    #17 0x0000000000418a88 in ?? ()
+    #18 0x00000000004187d6 in ?? ()
+    #19 0x00007ffff73fdec5 in __libc_start_main (main=0x4182e0, argc=4, argv=0x7fffffffe108, init=<optimised out>, 
+            fini=<optimised out>, rtld_fini=<optimised out>, stack_end=0x7fffffffe0f8) at libc-start.c:287
+    #20 0x000000000041885b in ?? ()
 
 History
 -------
