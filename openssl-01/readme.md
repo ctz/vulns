@@ -1,12 +1,14 @@
-Denial of Service in Elliptic Curve Parsing
-===========================================
+Denial of Service in Elliptic Curve Parsing/Processing
+======================================================
 
 Overview
 --------
-When parsing an ASN.1 ECParameters specifying a curve over a
-malformed binary polynomial field, OpenSSL enters an infinite
-loop.  This can be used to perform denial of service against
-any system which parses public keys, certificate requests or
+When parsing an ASN.1 ECParameters structure OpenSSL enters
+an infinite loop if the curve specified is over a specially
+malformed binary polynomial field.
+
+This can be used to perform denial of service against any
+system which processes public keys, certificate requests or
 certificates.  This includes TLS clients and TLS servers with
 client authentication enabled.
 
@@ -35,28 +37,30 @@ Three patches are included:
 PoC
 ---
 
-Included here:
+`original-cert.der` is a basic X509 certificate with a public
+key on the ANSI X9.62 `c2pnb208w1` curve.  The choice of curve
+is not important, except it must be a binary curve, and must
+be explicitly specified.
 
-- `original-cert.der`: a basic X509 certificate with a public
-  key on the ANSI X9.62 `c2pnb208w1` curve.  The choice of curve
-  is not important, except it must be a binary curve, and must
-  be explicitly specified.
-- `broken-cert.der`: the same file, with edits to trigger the bug.
-  This is not a unique set of edits; a fuzzer will find others.
+`broken-cert.der`: the same file, with edits to trigger the bug.
+This is not a unique set of edits; a fuzzer will find others.
 
-Elsewhere:
+The requirements are that the polynomial is not irreducible,
+and that the base point is not uncompressed.  The base point
+uncompression happens during parsing, and involves a call
+to the broken function `BN_GF2m_mod_inv` via `EC_POINT_oct2point`.
 
-- `dumb-server.py`: this is a trivial TLS server.  Its sole purpose
-  is to accept a `ClientHello`, and reply with a `ServerHello` and
-  `Certificate` containing the malformed certificate.  Get this from
-  https://github.com/ctz/tls-hacking
+`dumb-server.py` is a trivial TLS server.  Its sole purpose
+is to accept a `ClientHello`, and reply with a `ServerHello` and
+`Certificate` containing the malformed certificate.  Get this from
+https://github.com/ctz/tls-hacking
 
 First, start the server:
 
     $ python3 dumb-server.py broken-cert.der
     listening on localhost 9999
 
-Reproduce with `openssl s_client`:
+Reproduce with Debian jessie `openssl s_client`:
 
     $ gdb -ex run --args openssl s_client -connect localhost:9999
     <snip>
@@ -93,7 +97,7 @@ Reproduce with `openssl s_client`:
             fini=<optimised out>, rtld_fini=<optimised out>, stack_end=0x7fffffffe0f8) at libc-start.c:287
     #20 0x000000000041885b in ?? ()
 
-Reproduce with `curl`:
+Reproduce with Debian jessie `curl`:
 
     $ gdb -ex run --args curl https://localhost:9999
     <snip>
@@ -148,9 +152,9 @@ commented-out code, and had no effect.
 The author posits that the root cause is checking in commented-out
 code and lack of regression testing.
 
-[1]: 1dc920c8de5b7109727a21163843feecdf06a8cf
-[2]: 8038e7e44c6060398f0793e3e16db0ad1ee95b9d
-[3]: 034688ec4d0e3d350dc0ee9602552f92e8889fc0
+[1]: https://github.com/openssl/openssl/commit/1dc920c8de5b7109727a21163843feecdf06a8cf
+[2]: https://github.com/openssl/openssl/commit/8038e7e44c6060398f0793e3e16db0ad1ee95b9d
+[3]: https://github.com/openssl/openssl/commit/034688ec4d0e3d350dc0ee9602552f92e8889fc0
 
 Fork status
 -----------
@@ -161,3 +165,4 @@ Fork status
 Author
 ------
 Joseph Birr-Pixton <jpixton@gmail.com>
+
