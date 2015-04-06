@@ -23,7 +23,7 @@ Three patches are included:
 
 - `tests.patch`: this is a large patch which only improves testing
   in this area. It includes a regression test for this issue and
-  a selection of other targetted tests.
+  a selection of other targeted tests.
 
 - `fix1.patch`: this patch fixes the issue by reinstating the
   existing fixed code and deleting the broken optimised version.
@@ -46,7 +46,7 @@ This is not a unique set of edits; a fuzzer will find others.
 
 The requirements are that the polynomial is not irreducible,
 and that the base point is not uncompressed.  The base point
-uncompression happens during parsing, and involves a call
+decompression happens during parsing, and involves a call
 to the broken function `BN_GF2m_mod_inv` via `EC_POINT_oct2point`.
 
 `dumb-server.py` is a trivial TLS server.  Its sole purpose
