@@ -10,17 +10,32 @@ any system which parses public keys, certificate requests or
 certificates.  This includes TLS clients and TLS servers with
 client authentication enabled.
 
-Details
--------
-
 Workarounds
 -----------
 Compile openssl with `--no-ec2m`.  This disables all support
-for elliptic curves over binary polynomial fields.  You really
-were not using them.
+for elliptic curves over binary polynomial fields.
+
+Patches
+-------
+Three patches are included:
+
+- `tests.patch`: this is a large patch which only improves testing
+  in this area. It includes a regression test for this issue and
+  a selection of other targetted tests.
+
+- `fix1.patch`: this patch fixes the issue by reinstating the
+  existing fixed code and deleting the broken optimised version.
+  This is a minimal change, and means the code is left clean
+  and as readable as possible.
+
+- `fix2.patch`: this patch fixes the issue by correcting the
+  optimised version, and deleting the commented out version.
+  This means the code is left fast but opaque.
 
 PoC
 ---
+
+Included here:
 
 - `original-cert.der`: a basic X509 certificate with a public
   key on the ANSI X9.62 `c2pnb208w1` curve.  The choice of curve
@@ -28,9 +43,13 @@ PoC
   be explicitly specified.
 - `broken-cert.der`: the same file, with edits to trigger the bug.
   This is not a unique set of edits; a fuzzer will find others.
+
+Elsewhere:
+
 - `dumb-server.py`: this is a trivial TLS server.  Its sole purpose
   is to accept a `ClientHello`, and reply with a `ServerHello` and
-  `Certificate` containing the malformed certificate.
+  `Certificate` containing the malformed certificate.  Get this from
+  https://github.com/ctz/tls-hacking
 
 First, start the server:
 

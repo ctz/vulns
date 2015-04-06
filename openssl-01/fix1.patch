@@ -1,0 +1,115 @@
+From eaf74e83a1292ba9258f3d996e2b26549a9dd781 Mon Sep 17 00:00:00 2001
+From: Joseph Birr-Pixton <jpixton@gmail.com>
+Date: Mon, 6 Apr 2015 17:51:06 +0100
+Subject: [PATCH] Fix hang in modular inversion with invalid curve
+
+This version of the deletes the fast code, thereby reinstating
+the previously corrected code.
+---
+ crypto/bn/bn_gf2m.c | 83 -----------------------------------------------------
+ 1 file changed, 83 deletions(-)
+
+diff --git a/crypto/bn/bn_gf2m.c b/crypto/bn/bn_gf2m.c
+index aeee49a..5559b24 100644
+--- a/crypto/bn/bn_gf2m.c
++++ b/crypto/bn/bn_gf2m.c
+@@ -657,7 +657,6 @@ int BN_GF2m_mod_inv(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
+ 
+     if (!BN_copy(v, p))
+         goto err;
+-# if 0
+     if (!BN_one(b))
+         goto err;
+ 
+@@ -692,88 +691,6 @@ int BN_GF2m_mod_inv(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
+         if (!BN_GF2m_add(b, b, c))
+             goto err;
+     }
+-# else
+-    {
+-        int i, ubits = BN_num_bits(u), vbits = BN_num_bits(v), /* v is copy
+-                                                                * of p */
+-            top = p->top;
+-        BN_ULONG *udp, *bdp, *vdp, *cdp;
+-
+-        bn_wexpand(u, top);
+-        udp = u->d;
+-        for (i = u->top; i < top; i++)
+-            udp[i] = 0;
+-        u->top = top;
+-        bn_wexpand(b, top);
+-        bdp = b->d;
+-        bdp[0] = 1;
+-        for (i = 1; i < top; i++)
+-            bdp[i] = 0;
+-        b->top = top;
+-        bn_wexpand(c, top);
+-        cdp = c->d;
+-        for (i = 0; i < top; i++)
+-            cdp[i] = 0;
+-        c->top = top;
+-        vdp = v->d;             /* It pays off to "cache" *->d pointers,
+-                                 * because it allows optimizer to be more
+-                                 * aggressive. But we don't have to "cache"
+-                                 * p->d, because *p is declared 'const'... */
+-        while (1) {
+-            while (ubits && !(udp[0] & 1)) {
+-                BN_ULONG u0, u1, b0, b1, mask;
+-
+-                u0 = udp[0];
+-                b0 = bdp[0];
+-                mask = (BN_ULONG)0 - (b0 & 1);
+-                b0 ^= p->d[0] & mask;
+-                for (i = 0; i < top - 1; i++) {
+-                    u1 = udp[i + 1];
+-                    udp[i] = ((u0 >> 1) | (u1 << (BN_BITS2 - 1))) & BN_MASK2;
+-                    u0 = u1;
+-                    b1 = bdp[i + 1] ^ (p->d[i + 1] & mask);
+-                    bdp[i] = ((b0 >> 1) | (b1 << (BN_BITS2 - 1))) & BN_MASK2;
+-                    b0 = b1;
+-                }
+-                udp[i] = u0 >> 1;
+-                bdp[i] = b0 >> 1;
+-                ubits--;
+-            }
+-
+-            if (ubits <= BN_BITS2 && udp[0] == 1)
+-                break;
+-
+-            if (ubits < vbits) {
+-                i = ubits;
+-                ubits = vbits;
+-                vbits = i;
+-                tmp = u;
+-                u = v;
+-                v = tmp;
+-                tmp = b;
+-                b = c;
+-                c = tmp;
+-                udp = vdp;
+-                vdp = v->d;
+-                bdp = cdp;
+-                cdp = c->d;
+-            }
+-            for (i = 0; i < top; i++) {
+-                udp[i] ^= vdp[i];
+-                bdp[i] ^= cdp[i];
+-            }
+-            if (ubits == vbits) {
+-                BN_ULONG ul;
+-                int utop = (ubits - 1) / BN_BITS2;
+-
+-                while ((ul = udp[utop]) == 0 && utop)
+-                    utop--;
+-                ubits = utop * BN_BITS2 + BN_num_bits_word(ul);
+-            }
+-        }
+-        bn_correct_top(b);
+-    }
+-# endif
+ 
+     if (!BN_copy(r, b))
+         goto err;
+-- 
+1.9.1
+

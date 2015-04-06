@@ -1,0 +1,82 @@
+From ff82221df89c85b11a5e5b9cf9360eb3061b9c52 Mon Sep 17 00:00:00 2001
+From: Joseph Birr-Pixton <jpixton@gmail.com>
+Date: Mon, 6 Apr 2015 17:41:03 +0100
+Subject: [PATCH] Fix hang in modular inversion with invalid curve
+
+This version of the fix deletes the commented-out code
+(previously fixed to no effect) and corrects the remaining
+code.
+---
+ crypto/bn/bn_gf2m.c | 41 +++++------------------------------------
+ 1 file changed, 5 insertions(+), 36 deletions(-)
+
+diff --git a/crypto/bn/bn_gf2m.c b/crypto/bn/bn_gf2m.c
+index aeee49a..ad0129c 100644
+--- a/crypto/bn/bn_gf2m.c
++++ b/crypto/bn/bn_gf2m.c
+@@ -657,42 +657,7 @@ int BN_GF2m_mod_inv(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
+ 
+     if (!BN_copy(v, p))
+         goto err;
+-# if 0
+-    if (!BN_one(b))
+-        goto err;
+-
+-    while (1) {
+-        while (!BN_is_odd(u)) {
+-            if (BN_is_zero(u))
+-                goto err;
+-            if (!BN_rshift1(u, u))
+-                goto err;
+-            if (BN_is_odd(b)) {
+-                if (!BN_GF2m_add(b, b, p))
+-                    goto err;
+-            }
+-            if (!BN_rshift1(b, b))
+-                goto err;
+-        }
+-
+-        if (BN_abs_is_word(u, 1))
+-            break;
+ 
+-        if (BN_num_bits(u) < BN_num_bits(v)) {
+-            tmp = u;
+-            u = v;
+-            v = tmp;
+-            tmp = b;
+-            b = c;
+-            c = tmp;
+-        }
+-
+-        if (!BN_GF2m_add(u, u, v))
+-            goto err;
+-        if (!BN_GF2m_add(b, b, c))
+-            goto err;
+-    }
+-# else
+     {
+         int i, ubits = BN_num_bits(u), vbits = BN_num_bits(v), /* v is copy
+                                                                 * of p */
+@@ -740,6 +705,11 @@ int BN_GF2m_mod_inv(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
+                 ubits--;
+             }
+ 
++            bn_correct_top(u);
++            if (BN_is_zero(u) || BN_is_zero(v)) /* poly was reducible */
++                goto err;
++            u->top = top;
++
+             if (ubits <= BN_BITS2 && udp[0] == 1)
+                 break;
+ 
+@@ -773,7 +743,6 @@ int BN_GF2m_mod_inv(BIGNUM *r, const BIGNUM *a, const BIGNUM *p, BN_CTX *ctx)
+         }
+         bn_correct_top(b);
+     }
+-# endif
+ 
+     if (!BN_copy(r, b))
+         goto err;
+-- 
+1.9.1
+
