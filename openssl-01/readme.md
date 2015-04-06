@@ -36,7 +36,6 @@ Three patches are included:
 
 PoC
 ---
-
 `original-cert.der` is a basic X509 certificate with a public
 key on the ANSI X9.62 `c2pnb208w1` curve.  The choice of curve
 is not important, except it must be a binary curve, and must
@@ -158,7 +157,6 @@ code and lack of regression testing.
 
 Fork status
 -----------
-
 - BoringSSL has deleted this code.
 - LibreSSL has the affected code and is thought to be vulnerable (untested).
 
