@@ -1,0 +1,27 @@
+--- /dev/fd/63	2015-06-08 23:14:04.500609782 +0100
++++ /dev/fd/62	2015-06-08 23:14:04.500609782 +0100
+
+First we make the field's polynomial reducible.
+
+@@ -47,7 +47,7 @@
+   259:d=7  hl=2 l=   9 cons:        SEQUENCE          
+   261:d=8  hl=2 l=   1 prim:         INTEGER           :01
+   264:d=8  hl=2 l=   1 prim:         INTEGER           :02
+-  267:d=8  hl=2 l=   1 prim:         INTEGER           :53
++  267:d=8  hl=2 l=   1 prim:         INTEGER           :3D
+   270:d=5  hl=2 l=  31 cons:      SEQUENCE          
+   272:d=6  hl=2 l=   1 prim:       OCTET STRING      
+       0001 - <SPACES/NULS>
+
+Next we say that our base point is compressed.  This causes point uncompression,
+which exercises the faulty code path during certificate parsing.
+
+@@ -55,7 +55,7 @@
+       0000 - c8 61 9e d4 5a 62 e6 21-2e 11 60 34 9e 2b fa 84   .a..Zb.!..`4.+..
+       0010 - 44 39 fa fc 2a 3f d1 63-8f 9e                     D9..*?.c..
+   303:d=5  hl=2 l=  53 prim:      OCTET STRING      
+-      0000 - 04 89 fd fb e4 ab e1 93-df 95 59 ec f0 7a c0 ce   ..........Y..z..
++      0000 - 07 49 fd fb e4 ab e1 93-df 95 59 ec f0 7a c0 ce   .I........Y..z..
+       0010 - 78 55 4e 27 84 eb 8c 1e-d1 a5 7a 0f 55 b5 1a 06   xUN'......z.U...
+       0020 - e7 8e 9a c3 8a 03 5f f5-20 d8 b0 17 81 be b1 a6   ......_. .......
+       0030 - bb 08 61 7d e3                                    ..a}.
